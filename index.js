@@ -14,38 +14,37 @@ function createBot() {
 
   const bot = mineflayer.createBot({
     host: 'arabix.aternos.me',
-    port: 25565,
-    username: 'bot_Arabix',
+    username: 'ArabixBot123', // ✅ اسم نظيف بدون رموز
     auth: 'offline',
     version: false
   });
 
   bot.on('login', () => {
     isBotOnline = true;
-    console.log('✅ تم تسجيل دخول البوت!');
-    bot.chat('🤖 | bot_Arabix أونلاين!');
+    console.log('✅ تم دخول البوت');
+    bot.chat('🤖 | ArabixBot أونلاين!');
   });
 
   bot.on('spawn', () => {
-    // 👟 منع الطرد بالحركة البسيطة:
-    bot.setControlState('sneak', true); // يفضل متسلل دائمًا
+    // 🔒 منع الطرد بالقفز والتسلل
+    bot.setControlState('sneak', true);
     setInterval(() => {
       bot.setControlState('jump', true);
       setTimeout(() => bot.setControlState('jump', false), 400);
-    }, 10000); // يقفز كل 10 ثواني
+    }, 10000);
   });
 
   bot.on('chat', (username, message) => {
     if (username === bot.username) return;
     const msg = message.toLowerCase();
 
-    // 🎯 النقاط
+    // 🎯 نظام النقاط
     if (!points[username]) points[username] = 0;
     points[username]++;
     savePoints();
 
     if (msg === '/points') {
-      bot.chat(`🎯 | @${username}، نقاطك: ${points[username]} نقطة`);
+      bot.chat(`🎯 | @${username} نقاطك: ${points[username]} نقطة`);
     }
 
     if (msg === '/top') {
@@ -57,7 +56,7 @@ function createBot() {
       bot.chat(`🏆 | أفضل اللاعبين: ${top}`);
     }
 
-    // 👋 ردود التحية
+    // 👋 تحيات وردود
     const greetings = ['hi','hello','hey','هاي','هلا','هلا والله','السلام عليكم','gg','باك','رجعت','morning','صباح الخير','مساء الخير','wb','welcome back'];
     const replies = ['🌟 ياهلا!','✨ منور السيرفر','👋 أهلا وسهلا','😄 مرحباً بك','💫 welcome back','🤩 نورت','💪 كيفك؟'];
     if (greetings.includes(msg)) {
@@ -65,7 +64,7 @@ function createBot() {
       bot.chat(`💬 | @${username} ${reply}`);
     }
 
-    // 🚫 الشتايم
+    // 🚫 فلتر الشتايم
     const swears = ['كلب','غبي','fuck','shit','bitch','حمار','وسخ','زفت','منيك','انيك','قذر','شرموط','كس','يلعن','كسمك'];
     if (swears.some(w => msg.includes(w))) {
       bot.chat(`🚫 | @${username} الرجاء عدم استخدام ألفاظ مسيئة!`);
@@ -73,10 +72,10 @@ function createBot() {
 
     // 🤖 ردود ذكية
     if (msg.includes('ميت') || msg.includes('جوعان') || msg.includes('زهقان')) {
-      bot.chat(`😅 | @${username} محتاج تلعب شوية، جرب تستكشف كهف!`);
+      bot.chat(`😅 | @${username} محتاج تلعب شوية، جرب تستكشف أو تصنع شيء جديد!`);
     }
-    if (msg.includes('ضعت') || msg.includes('وين') || msg.includes('فين')) {
-      bot.chat(`🧭 | @${username} تأكد من مكانك أو استخدم /sethome.`);
+    if (msg.includes('ضعت') || msg.includes('فين') || msg.includes('وين')) {
+      bot.chat(`🧭 | @${username} حاول تستخدم /sethome أو اطلب مساعدة من اللاعبين.`);
     }
     if (msg.includes('?') || msg.includes('؟') || msg.startsWith('كيف') || msg.startsWith('ليش')) {
       bot.chat(`🤖 | @${username} سؤال ممتاز! اسأل أصحابك كمان 😉`);
@@ -94,12 +93,12 @@ function createBot() {
   });
 
   bot.on('error', err => {
-    console.log('❌ خطأ:', err.message);
+    console.log('⚠️ خطأ:', err.message);
   });
 
   bot.on('end', () => {
     isBotOnline = false;
-    console.log('🔁 تم فصل البوت. إعادة الاتصال خلال 5 ثوانٍ...');
+    console.log('❌ تم فصل البوت. إعادة الاتصال بعد 5 ثوانٍ...');
     setTimeout(createBot, 5000);
   });
 }
