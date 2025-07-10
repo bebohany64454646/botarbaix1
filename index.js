@@ -1,46 +1,48 @@
 const mineflayer = require('mineflayer');
 
-const bot = mineflayer.createBot({
-  host: 'arabix.aternos.me', // غيّرها لسيرفرك
-  username: 'ArabixBot123',    // اسم نظيف بدون رموز
-  auth: 'offline',
-  version: false
-});
+let bot = null;
+let reconnectTimeout = null;
 
-let movingForward = true;
-let distanceMoved = 0;
-const stepDistance = 5; // عدد البلوكات اللي يتحركها في كل اتجاه
+function startBot() {
+  if (bot) return;
 
-bot.once('spawn', () => {
-  console.log('✅ البوت دخل السيرفر');
+  bot = mineflayer.createBot({
+    host: 'arabix.aternos.me',
+    username: 'ArabixBot123', // اسم بسيط وآمن
+    auth: 'offline',
+    version: false
+  });
 
-  // تحكم بالحركة كل 500 مللي ثانية (0.5 ثانية)
-  setInterval(() => {
-    if (movingForward) {
-      bot.setControlState('forward', true);
-      bot.setControlState('back', false);
-    } else {
-      bot.setControlState('forward', false);
-      bot.setControlState('back', true);
+  bot.on('login', () => {
+    console.log('✅ دخل السيرفر');
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout);
+      reconnectTimeout = null;
     }
+  });
 
-    distanceMoved++;
+  bot.on('spawn', () => {
+    // يمكن تضيف حركات بسيطة هنا لو تحب
+  });
 
-    if (distanceMoved >= stepDistance * 2) {
-      distanceMoved = 0;
-      movingForward = !movingForward; // غيّر الاتجاه
+  bot.on('end', () => {
+    console.log('❌ تم فصل البوت');
+    bot = null;
+    if (!reconnectTimeout) {
+      reconnectTimeout = setTimeout(() => {
+        reconnectTimeout = null;
+        startBot();
+      }, 5000);
     }
-  }, 500);
-});
+  });
 
-bot.on('error', err => {
-  console.log('⚠️ خطأ:', err.message);
-});
+  bot.on('error', err => {
+    console.log('⚠️ خطأ:', err.message);
+  });
 
-bot.on('end', () => {
-  console.log('❌ تم فصل البوت، يحاول إعادة الاتصال بعد 5 ثوانٍ');
-  setTimeout(() => {
-    bot.quit();
-    process.exit(); // أغلق العملية - ممكن تعدلها حسب الحاجة
-  }, 5000);
-});
+  bot.on('kicked', reason => {
+    console.log('🚫 تم طرد البوت:', reason);
+  });
+}
+
+startBot();
