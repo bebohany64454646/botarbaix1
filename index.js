@@ -1,37 +1,42 @@
 const mineflayer = require('mineflayer');
 
-let bot;
+const bot = mineflayer.createBot({
+  host: 'arabix.aternos.me', // غيرها لسيرفرك
+  username: 'ArabixBot123',    // اسم نظيف وبسيط
+  auth: 'offline',
+  version: false
+});
 
-function startBot() {
-  bot = mineflayer.createBot({
-    host: 'arabix.aternos.me',  // غيّرها لسيرفرك
-    username: 'ArabixBot1235',    // اسم نظيف بدون رموز ومسافات
-    auth: 'offline',             // إذا السيرفر offline mode، غيرها حسب نوع السيرفر
-    version: false               // يخلي المكتبة تحدد النسخة تلقائيًا
-  });
+let movingForward = true;
+let moveTicks = 0;
+const moveLimit = 10; // 10 خطوات = 5 ثواني * 2 (قد تختلف حسب سرعة البوت)
 
-  bot.on('login', () => {
-    console.log('✅ تم الدخول للسيرفر بنجاح');
-  });
+bot.once('spawn', () => {
+  console.log('✅ البوت دخل السيرفر وجاهز');
 
-  bot.on('spawn', () => {
-    console.log('🚀 البوت جاهز الآن داخل السيرفر');
-  });
+  // نستخدم setInterval للحركة بشكل مستمر
+  setInterval(() => {
+    if (movingForward) {
+      bot.setControlState('forward', true);
+      bot.setControlState('back', false);
+    } else {
+      bot.setControlState('forward', false);
+      bot.setControlState('back', true);
+    }
 
-  bot.on('end', () => {
-    console.log('❌ تم فصل البوت. إعادة المحاولة خلال 5 ثواني...');
-    setTimeout(() => {
-      startBot();
-    }, 5000);
-  });
+    moveTicks++;
 
-  bot.on('error', (err) => {
-    console.log('⚠️ خطأ:', err.message);
-  });
+    if (moveTicks >= moveLimit) {
+      moveTicks = 0;
+      movingForward = !movingForward; // قلب الاتجاه
+    }
+  }, 500); // كل نصف ثانية تتحرك
+});
 
-  bot.on('kicked', (reason) => {
-    console.log('🚫 تم طرد البوت من السيرفر:', reason);
-  });
-}
+bot.on('end', () => {
+  console.log('❌ تم فصل البوت، لن يعيد الدخول');
+});
 
-startBot();
+bot.on('error', err => {
+  console.log('⚠️ خطأ:', err.message);
+});
