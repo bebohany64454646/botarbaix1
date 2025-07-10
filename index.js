@@ -1,48 +1,28 @@
 const mineflayer = require('mineflayer');
 
-let bot = null;
-let reconnectTimeout = null;
+const bot = mineflayer.createBot({
+  host: 'arabix.aternos.me',
+  username: 'ArabixBot123', // اسم نظيف
+  auth: 'offline',
+  version: false
+});
 
-function startBot() {
-  if (bot) return;
+bot.on('login', () => {
+  console.log('✅ البوت دخل السيرفر');
+});
 
-  bot = mineflayer.createBot({
-    host: 'arabix.aternos.me',
-    username: 'ArabixBot123', // اسم بسيط وآمن
-    auth: 'offline',
-    version: false
-  });
+bot.on('spawn', () => {
+  console.log('🚀 البوت جاهز للعمل داخل السيرفر');
+});
 
-  bot.on('login', () => {
-    console.log('✅ دخل السيرفر');
-    if (reconnectTimeout) {
-      clearTimeout(reconnectTimeout);
-      reconnectTimeout = null;
-    }
-  });
+bot.on('kicked', reason => {
+  console.log('🚫 تم طرد البوت:', reason);
+});
 
-  bot.on('spawn', () => {
-    // يمكن تضيف حركات بسيطة هنا لو تحب
-  });
+bot.on('end', () => {
+  console.log('❌ تم فصل البوت - لن يعيد الدخول تلقائيًا');
+});
 
-  bot.on('end', () => {
-    console.log('❌ تم فصل البوت');
-    bot = null;
-    if (!reconnectTimeout) {
-      reconnectTimeout = setTimeout(() => {
-        reconnectTimeout = null;
-        startBot();
-      }, 5000);
-    }
-  });
-
-  bot.on('error', err => {
-    console.log('⚠️ خطأ:', err.message);
-  });
-
-  bot.on('kicked', reason => {
-    console.log('🚫 تم طرد البوت:', reason);
-  });
-}
-
-startBot();
+bot.on('error', err => {
+  console.log('⚠️ خطأ:', err.message);
+});
