@@ -8,12 +8,14 @@ function createBot() {
     version: false
   });
 
+  // قائمة الشتائم
   const swears = [
     'احا', 'يلعن', 'كلب', 'غبي', 'fuck', 'shit', 'bitch',
     'حمار', 'وسخ', 'زفت', 'منيك', 'انيك', 'قذر', 'شرموط',
     'كس', 'كسمك', 'ابن الكلب', 'حيوان'
   ];
 
+  // تحيات وردود
   const greetings = {
     'هاي': '🌟 أهلًا وسهلًا بك!',
     'هلا': '✨ نور السيرفر بوجودك!',
@@ -27,16 +29,20 @@ function createBot() {
     'رجعت': '🤗 رجعت وعزتنا زادت!'
   };
 
+  // عدد الشتائم لكل لاعب
+  const warnings = {};
+  const muted = new Set(); // اللاعبين الممنوعين من الكتابة
+
+  // التحكم بالحركة
   let movingForward = true;
   let moveTicks = 0;
-  const moveLimit = 5; // عدد الخطوات للأمام والخلف
+  const moveLimit = 5; // عدد الخطوات لكل اتجاه
 
-  const warnings = {};
-  const muted = new Set();
-
+  // عند الدخول
   bot.once('spawn', () => {
     console.log('✅ البوت دخل السيرفر وجاهز');
 
+    // حركة مستمرة للأمام والخلف
     setInterval(() => {
       if (movingForward) {
         bot.setControlState('forward', true);
@@ -51,28 +57,32 @@ function createBot() {
         moveTicks = 0;
         movingForward = !movingForward;
       }
-    }, 500); // كل نصف ثانية يتحرك
+    }, 500);
   });
 
+  // ترحيب باللاعبين
   bot.on('playerJoined', (player) => {
     if (player.username !== bot.username) {
       bot.chat(`🎉 أهلًا وسهلًا @${player.username}! نتمنى لك وقتًا ممتعًا في سيرفرنا 💎`);
     }
   });
 
+  // فلترة الدردشة
   bot.on('chat', (username, message) => {
     if (username === bot.username) return;
 
     const msg = message.toLowerCase();
 
+    // إذا اللاعب ميوت، تجاهل كلامه
     if (muted.has(username)) return;
 
+    // شتائم؟
     if (swears.some(word => msg.includes(word))) {
       warnings[username] = (warnings[username] || 0) + 1;
 
       if (warnings[username] >= 3) {
         muted.add(username);
-        bot.chat(`⛔ @${username} تم كتمك بسبب تكرار الألفاظ المسيئة.`);
+        bot.chat(`⛔ @${username} تم كتمك بعد تكرار الألفاظ المسيئة.`);
       } else {
         const remaining = 3 - warnings[username];
         bot.chat(`⚠️ @${username} الرجاء عدم استخدام ألفاظ مسيئة. (${remaining} تحذير متبقٍ قبل الميوت)`);
@@ -81,6 +91,7 @@ function createBot() {
       return;
     }
 
+    // تحية؟
     for (const key in greetings) {
       if (msg.includes(key)) {
         bot.chat(`💬 @${username} ${greetings[key]}`);
@@ -89,14 +100,17 @@ function createBot() {
     }
   });
 
+  // إذا حصل خطأ
   bot.on('error', err => {
     console.log('⚠️ خطأ:', err.message);
   });
 
+  // إذا طُرد أو خرج يعيد الاتصال
   bot.on('end', () => {
-    console.log('❌ البوت خرج، سيتم إعادة الاتصال خلال 5 ثوانٍ...');
-    setTimeout(createBot, 5000);
+    console.log('❌ تم طرد البوت، سيحاول الدخول مجددًا خلال 5 ثوانٍ...');
+    setTimeout(createBot, 5000); // إعادة تشغيل
   });
 }
 
+// شغل البوت أول مرة
 createBot();
